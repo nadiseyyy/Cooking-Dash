@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Retro Cooking Game 🍳</title>
+
+<style>
+body {
+  font-family: 'Courier New', monospace;
+  text-align: center;
+  background: black;
+  color: #00ffcc;
+}
+
+.container {
+  margin-top: 30px;
+}
+
+h1 {
+  text-shadow: 0 0 10px #00ffcc;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  border: 2px solid #00ffcc;
+  background: black;
+  color: #00ffcc;
+}
+
+button:hover {
+  background: #00ffcc;
+  color: black;
+}
+
+/* Animasi retro kedip */
+@keyframes blink {
+  0% {opacity: 1;}
+  50% {opacity: 0.3;}
+  100% {opacity: 1;}
+}
+
+#chef {
+  width: 120px;
+  animation: blink 1s infinite;
+}
+
+/* Animasi goyang */
+@keyframes shake {
+  0% {transform: translateX(0);}
+  25% {transform: translateX(-5px);}
+  50% {transform: translateX(5px);}
+  75% {transform: translateX(-5px);}
+  100% {transform: translateX(0);}
+}
+
+.shake {
+  animation: shake 0.5s;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>🍳 Retro Cooking Game</h1>
+
+  <!-- Karakter Chef -->
+  <img id="chef" src="https://i.imgur.com/3ZQ3Z6v.png">
+
+  <p id="soal">Klik mulai untuk bermain!</p>
+
+  <button onclick="pilih('a')" id="btnA">A</button>
+  <button onclick="pilih('b')" id="btnB">B</button>
+  <br>
+  <button onclick="mulaiGame()">START</button>
+</div>
+
+<!-- Suara -->
+<audio id="benar" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+<audio id="salah" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+
+<script>
+let skor = 0;
+let step = 0;
+
+function playSound(id){
+  document.getElementById(id).play();
+}
+
+function animasiChef(){
+  let chef = document.getElementById("chef");
+  chef.classList.add("shake");
+  setTimeout(() => chef.classList.remove("shake"), 500);
+}
+
+function mulaiGame(){
+  skor = 0;
+  step = 1;
+
+  document.getElementById("soal").innerText =
+    "1. Pilih bahan utama";
+
+  btnA.innerText = "Nasi";
+  btnB.innerText = "Mie";
+}
+
+function pilih(jawaban){
+
+  animasiChef();
+
+  if(step === 1){
+    if(jawaban === "a"){
+      skor += 10;
+      playSound("benar");
+    } else {
+      playSound("salah");
+    }
+
+    step = 2;
+    soal.innerText = "2. Apa langkah pertama?";
+    btnA.innerText = "Panaskan minyak";
+    btnB.innerText = "Masukkan nasi";
+  }
+
+  else if(step === 2){
+    if(jawaban === "a"){
+      skor += 10;
+      playSound("benar");
+    } else {
+      playSound("salah");
+    }
+
+    step = 3;
+    soal.innerText = "3. Tambahkan bumbu?";
+    btnA.innerText = "Garam & kecap";
+    btnB.innerText = "Gula";
+  }
+
+  else if(step === 3){
+    if(jawaban === "a"){
+      skor += 10;
+      playSound("benar");
+    } else {
+      playSound("salah");
+    }
+
+    let hasil = skor === 30 ? "CHEF MASTER 👨‍🍳🔥"
+               : skor >= 20 ? "Lumayan 👍"
+               : "Coba lagi 😅";
+
+    alert("Skor: " + skor + "/30\n" + hasil);
+    mulaiGame();
+  }
+}
+</script>
+
+</body>
+</html>
