@@ -2,159 +2,205 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Retro Cooking Game 🍳</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retro Diner Dash 🍽️</title>
 
 <style>
 body {
+  margin: 0;
+  background: #111;
+  color: #00ffcc;
   font-family: 'Courier New', monospace;
   text-align: center;
-  background: black;
-  color: #00ffcc;
 }
 
-.container {
-  margin-top: 30px;
-}
+h1 { text-shadow: 0 0 10px #00ffcc; }
 
-h1 {
-  text-shadow: 0 0 10px #00ffcc;
-}
-
-button {
-  padding: 10px 20px;
+#ui {
+  display: flex;
+  justify-content: space-around;
   margin: 10px;
-  font-size: 16px;
-  cursor: pointer;
+}
+
+#game {
+  position: relative;
+  width: 90%;
+  max-width: 700px;
+  height: 400px;
+  margin: auto;
+  background: #222;
+  border: 3px solid #00ffcc;
+  overflow: hidden;
+}
+
+/* Chef */
+#chef {
+  position: absolute;
+  width: 50px;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Meja */
+.table {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  background: brown;
+  top: 60px;
+}
+
+#t1 { left: 10%; }
+#t2 { left: 40%; }
+#t3 { left: 70%; }
+
+/* Customer */
+.customer {
+  position: absolute;
+  width: 40px;
+}
+
+/* Mobile Control */
+#controls {
+  margin-top: 10px;
+}
+
+.ctrl-btn {
+  padding: 10px;
+  margin: 5px;
+  font-size: 18px;
   border: 2px solid #00ffcc;
   background: black;
   color: #00ffcc;
-}
-
-button:hover {
-  background: #00ffcc;
-  color: black;
-}
-
-/* Animasi retro kedip */
-@keyframes blink {
-  0% {opacity: 1;}
-  50% {opacity: 0.3;}
-  100% {opacity: 1;}
-}
-
-#chef {
-  width: 120px;
-  animation: blink 1s infinite;
-}
-
-/* Animasi goyang */
-@keyframes shake {
-  0% {transform: translateX(0);}
-  25% {transform: translateX(-5px);}
-  50% {transform: translateX(5px);}
-  75% {transform: translateX(-5px);}
-  100% {transform: translateX(0);}
-}
-
-.shake {
-  animation: shake 0.5s;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-  <h1>🍳 Retro Cooking Game</h1>
+<h1>🍽️ Retro Diner Dash</h1>
 
-  <!-- Karakter Chef -->
-  <img id="chef" src="https://i.imgur.com/3ZQ3Z6v.png">
-
-  <p id="soal">Klik mulai untuk bermain!</p>
-
-  <button onclick="pilih('a')" id="btnA">A</button>
-  <button onclick="pilih('b')" id="btnB">B</button>
-  <br>
-  <button onclick="mulaiGame()">START</button>
+<div id="ui">
+  <div>💰 Uang: <span id="money">0</span></div>
+  <div>❤️ Nyawa: <span id="life">3</span></div>
+  <div>⭐ Level: <span id="level">1</span></div>
 </div>
 
-<!-- Suara -->
-<audio id="benar" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
-<audio id="salah" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+<div id="game">
+  <img id="chef" src="https://i.imgur.com/3ZQ3Z6v.png">
+
+  <div class="table" id="t1"></div>
+  <div class="table" id="t2"></div>
+  <div class="table" id="t3"></div>
+</div>
+
+<div id="controls">
+  <button class="ctrl-btn" onclick="move(-30)">⬅️</button>
+  <button class="ctrl-btn" onclick="serve()">🍽️</button>
+  <button class="ctrl-btn" onclick="move(30)">➡️</button>
+</div>
+
+<!-- Sound -->
+<audio id="serveSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+<audio id="failSound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
 
 <script>
-let skor = 0;
-let step = 0;
+let chefX = window.innerWidth/2;
+let money = 0;
+let life = 3;
+let level = 1;
+let customers = [];
 
-function playSound(id){
-  document.getElementById(id).play();
+const chef = document.getElementById("chef");
+const game = document.getElementById("game");
+
+function updateUI(){
+  moneyEl.innerText = money;
+  lifeEl.innerText = life;
+  levelEl.innerText = level;
 }
 
-function animasiChef(){
-  let chef = document.getElementById("chef");
-  chef.classList.add("shake");
-  setTimeout(() => chef.classList.remove("shake"), 500);
+function spawnCustomer(){
+  let meja = Math.floor(Math.random()*3)+1;
+  let cust = document.createElement("img");
+
+  cust.src = "https://i.imgur.com/8Qf6G6B.png";
+  cust.className = "customer";
+
+  let table = document.getElementById("t"+meja);
+
+  cust.style.left = table.offsetLeft + 20 + "px";
+  cust.style.top = "10px";
+
+  game.appendChild(cust);
+
+  customers.push({el:cust, meja:meja, time:5});
 }
 
-function mulaiGame(){
-  skor = 0;
-  step = 1;
+setInterval(spawnCustomer, 3000);
 
-  document.getElementById("soal").innerText =
-    "1. Pilih bahan utama";
+setInterval(()=>{
+  customers.forEach((c,i)=>{
+    c.time--;
+    if(c.time<=0){
+      c.el.remove();
+      customers.splice(i,1);
+      life--;
+      document.getElementById("failSound").play();
 
-  btnA.innerText = "Nasi";
-  btnB.innerText = "Mie";
-}
-
-function pilih(jawaban){
-
-  animasiChef();
-
-  if(step === 1){
-    if(jawaban === "a"){
-      skor += 10;
-      playSound("benar");
-    } else {
-      playSound("salah");
+      if(life<=0){
+        gameOver();
+      }
     }
+  });
+  updateUI();
+},1000);
 
-    step = 2;
-    soal.innerText = "2. Apa langkah pertama?";
-    btnA.innerText = "Panaskan minyak";
-    btnB.innerText = "Masukkan nasi";
-  }
-
-  else if(step === 2){
-    if(jawaban === "a"){
-      skor += 10;
-      playSound("benar");
-    } else {
-      playSound("salah");
-    }
-
-    step = 3;
-    soal.innerText = "3. Tambahkan bumbu?";
-    btnA.innerText = "Garam & kecap";
-    btnB.innerText = "Gula";
-  }
-
-  else if(step === 3){
-    if(jawaban === "a"){
-      skor += 10;
-      playSound("benar");
-    } else {
-      playSound("salah");
-    }
-
-    let hasil = skor === 30 ? "CHEF MASTER 👨‍🍳🔥"
-               : skor >= 20 ? "Lumayan 👍"
-               : "Coba lagi 😅";
-
-    alert("Skor: " + skor + "/30\n" + hasil);
-    mulaiGame();
-  }
+function move(dx){
+  chefX += dx;
+  chef.style.left = chefX + "px";
 }
+
+function serve(){
+  customers.forEach((c,i)=>{
+    let table = document.getElementById("t"+c.meja);
+
+    if(Math.abs(table.offsetLeft - chefX) < 60){
+      c.el.remove();
+      customers.splice(i,1);
+      money += 10;
+      document.getElementById("serveSound").play();
+
+      if(money % 50 === 0){
+        level++;
+      }
+    }
+  });
+  updateUI();
+}
+
+/* Keyboard */
+document.addEventListener("keydown", e=>{
+  if(e.key==="ArrowLeft") move(-30);
+  if(e.key==="ArrowRight") move(30);
+  if(e.key===" ") serve();
+});
+
+/* Leaderboard */
+function gameOver(){
+  let name = prompt("Game Over! Masukkan nama:");
+  let data = JSON.parse(localStorage.getItem("leaderboard")) || [];
+  data.push({name:name, score:money});
+  localStorage.setItem("leaderboard", JSON.stringify(data));
+  location.reload();
+}
+
+const moneyEl = document.getElementById("money");
+const lifeEl = document.getElementById("life");
+const levelEl = document.getElementById("level");
+
+updateUI();
 </script>
 
 </body>
